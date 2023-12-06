@@ -1,5 +1,5 @@
 # -*- coding = utf-8 -*-
-# @Time: 2023/11/29 16:24
+# @Time: 2023/12/5 16:24
 # @Author: Jiahao Xu
 # @File：output_pdf.py
 # @Software: PyCharm
@@ -13,6 +13,12 @@ from stats_desc import factor_stats
 
 
 def save_plots_to_pdf(dataframe, plots, output_path):
+    """
+    将描述性统计和可视化结果输出为pdf
+    :param dataframe: 描述性统计结果
+    :param plots: 可视化结果列表
+    :param output_path: pdf输出路径
+    """
     with PdfPages(output_path) as pdf:
         fig, ax = plt.subplots()
         ax.axis('off')  # Hide the axis
