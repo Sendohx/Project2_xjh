@@ -13,7 +13,8 @@ def visualization(factor_data, factor, factor2):
     """
     绘制因子的时序趋势图
     :param factor_data: 包含因子数据的DataFrame，其中一列为因子历史值
-    :param factor: 因子名称
+    :param factor: 因子名称,例 ‘sigma’
+    :param factor2: 其他参与相关性分析的因子，例 ['a','b','c']
     """
     # sns.set(style='ticks', palette='deep')
     # sns.reset_defaults()
