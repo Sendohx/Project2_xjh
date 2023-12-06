@@ -85,14 +85,15 @@ def visualization(factor_data, factor, factor2):
     plots.append(fig4)
   
   
-    # 绘制因子的相互关联图(pairplot,pdf显示不出来)
-    fig5 = plt.figure(figsize=(30,10), subplotpars=5)
-    sns.pairplot(factor_data, y_vars= [factor], x_vars=factor2,kind='reg', diag_kind='auto').fig.set_size_inches(20,6)
-    plt.tight_layout()
-    plots.append(fig5)
+    # 绘制因子的相互关联图
+    ## 方法一 pairplot,pdf显示不出来
+    # fig5 = plt.figure(figsize=(30,10), subplotpars=5)
+    # sns.pairplot(factor_data, y_vars= [factor], x_vars=factor2,kind='reg', diag_kind='auto').fig.set_size_inches(20,6)
+    # plt.tight_layout()
+    # plots.append(fig5)
   
   
-    # 绘制因子的相互关联图(scatterplot)
+    ## 方法二 scatterplot + 循环 显示不出来
     # factor_lists = factor_data[[factor] + factor2]
     # num_cols = len(factor_lists)
     # num_rows = num_cols
@@ -105,6 +106,10 @@ def visualization(factor_data, factor, factor2):
 
     #plt.tight_layout()
     #plots.append(fig_sca)
+
+    ## 方法三 pd.plotting.scatter_matirx + 设置子图位置
+    fig5 = pd.plotting.scatter_matrix(factor_data[[factor] + factor2],figsize=(20,20))
+    pdf.savefig(fig5[0][0].figure)
     
     
     # 绘制相关性强度图
