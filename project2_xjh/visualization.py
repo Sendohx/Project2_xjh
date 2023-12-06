@@ -6,68 +6,113 @@
 
 import matplotlib.pyplot as plt
 import seaborn as sns
+import pandas as pd
 
 
-def plot_trend(factor_data, factor):
+def visualization(factor_data, factor, factor2):
     """
     绘制因子的时序趋势图
     :param factor_data: 包含因子数据的DataFrame，其中一列为因子历史值
     :param factor: 因子名称
     """
-    x = factor_data['date']  # 假设日期列的名称为'日期'
-    y = factor_data[factor]  # 假设因子列的名称为'因子列名'
-
-    plt.plot(x, y)
-    plt.xlabel('date')
+    # sns.set(style='ticks', palette='deep')
+    # sns.reset_defaults()
+    plt.rcParams['font.size'] = 17
+    plots = []
+       
+    # 因子 及 标的价格 趋势图
+    factor_data['date'] = pd.to_datetime(factor_data['date'], format='%Y%m%d') 
+    x = factor_data['date'] 
+    y1 = factor_data[factor]  
+    y2 = factor_data['close']
+    
+    fig1 = plt.figure(figsize=(30, 10))
+    plt.plot(x,y1,'y-', label=factor)
     plt.ylabel(factor)
-    plt.title(factor + '_trend')
+    #plt.tick_params('y',colors='y')
     plt.xticks(rotation=45)
+
+    plt.twinx()
+    plt.plot(x,y2,'r-',label='benchmark')
+    plt.ylabel('benchmark_price')
+    #plt.tick_params('y',colors='r')
+    plt.xticks(rotation=45)
+    plt.legend(loc='best')
+
+    plt.title(factor + '_trend')
+    plt.gca().xaxis.set_major_locator(plt.MaxNLocator(20))
     plt.grid(True)
-    plt.show()
-
-
-def plot_distribution(factor_data, factor):
-    """
-    绘制因子的连续数值离散化直方图和箱体图
-    :param factor_data: 包含因子数据的DataFrame，其中一列为因子历史值
-    :param factor: 因子名称
-    """
-    factor_values = factor_data[factor].values  # 假设因子列的名称为'因子列名'
-
-    # 绘制直方图
-    plt.figure(figsize=(10, 6))
+    plt.tight_layout()
+    plots.append(fig1)
+    
+   
+    # 绘制频率直方图
+    factor_values = factor_data[factor].values
+    fig2 = plt.figure(figsize=(20, 6))
     sns.histplot(factor_values, kde=True)
+
+    ## 在直方图上绘制中位数和均值的垂直线
+    median = np.median(factor_values)
+    mean = np.mean(factor_values)
+    plt.axvline(median, color='r', linestyle='-', label='median')
+    plt.axvline(mean, color='orange', linestyle='-', label='mean')
+    plt.legend()
+    
     plt.xlabel(factor)
     plt.ylabel('Frequency')
     plt.title('Histogram')
     plt.grid(True)
-    plt.show()
+    plt.tight_layout()
+    plots.append(fig2)
 
-    # 绘制箱体图
-    plt.figure(figsize=(10, 6))
+
+    # 绘制箱线图
+    df = factor_data[factor].describe().round(4).reset_index()
+    fig3, ax = plt.subplots()
+    ax.axis('off')  # Hide the axis
+    table = ax.table(cellText=df.values, cellLoc='center', loc='center')
+    table.auto_set_font_size(True)
+    table.scale(1, 1.5)
+    plots.append(fig3)
+    
+    fig4 = plt.figure(figsize=(20, 6)) 
+    #factor_data[factor].plot.box(title=factor +"_Boxplot", whis=2.0)
     sns.boxplot(x=factor_values)
-    plt.xlabel(factor)
-    plt.ylabel('factor_values')
-    plt.title('Boxplot')
+    #plt.ylabel('factor_values')
     plt.grid(True)
-    plt.show()
+    plt.tight_layout() 
+    plots.append(fig4)
+  
+  
+    # 绘制因子的相互关联图(pairplot,pdf显示不出来)
+    fig5 = plt.figure(figsize=(30,10), subplotpars=5)
+    sns.pairplot(factor_data, y_vars= [factor], x_vars=factor2,kind='reg', diag_kind='auto').fig.set_size_inches(20,6)
+    plt.tight_layout()
+    plots.append(fig5)
+  
+  
+    # 绘制因子的相互关联图(scatterplot)
+    # factor_lists = factor_data[[factor] + factor2]
+    # num_cols = len(factor_lists)
+    # num_rows = num_cols
+    # 
+    # fig_sca, ax = plt.subplots(num_rows, num_cols, figsize=(12, 12))
+    # for i in range(num_rows):
+    #     for j in range(num_cols):
+    #         # 绘制散点图
+    #         sns.scatterplot(data=factor_lists, x=columns[j], y=columns[i], ax=ax[i, j])
 
-
-def plot_correlation(factor_data):
-    """
-    绘制因子的相互关联图和相关性强度图
-    :param factor_data: 包含因子数据的DataFrame, 例：指数因子dataframe：日期，因子1，因子2，...
-    """
-    correlations = factor_data.sort_values('date').corr()
-
-    # 绘制因子的相互关联图
-    plt.figure(figsize=(10, 6))
-    sns.heatmap(correlations, annot=True, cmap='coolwarm')
-    plt.title('因子相互关联图')
-    plt.show()
-
+    #plt.tight_layout()
+    #plots.append(fig_sca)
+    
+    
     # 绘制相关性强度图
-    plt.figure(figsize=(10, 6))
-    sns.heatmap(correlations, annot=True, cmap='coolwarm', mask=correlations == 1)
-    plt.title('因子相关性强度图')
-    plt.show()
+    correlations = factor_data[[factor]+ factor2].corr()
+    fig6 = plt.figure(figsize=(10, 8))
+    sns.heatmap(correlations, mask=correlations == 1, annot=True, cmap='coolwarm',center=0,fmt=".2f", linewidths=0.5, cbar_kws={"shrink": 0.8})
+    plt.title('Correlation')
+    plt.xticks(rotation=45)
+    plt.tight_layout() 
+    plots.append(fig6)
+  
+    return plots
